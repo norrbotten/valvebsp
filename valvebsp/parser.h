@@ -97,7 +97,7 @@ namespace ValveBSP {
 				lump_t* lumpinfo = &bsp.header.lumps[0];
 
 				bsp.lump0_entities.reserve(lumpinfo->filelen);
-				memcpy(bsp.lump0_entities.data(), this->buffer + lumpinfo->fileofs, lumpinfo->filelen);
+				memcpy((void*)bsp.lump0_entities.data(), this->buffer + lumpinfo->fileofs, lumpinfo->filelen);
 
 				bsp.lumps[0] = (void*)&bsp.lump0_entities;
 			}
@@ -109,7 +109,7 @@ namespace ValveBSP {
 				lump_t* lumpinfo = &bsp.header.lumps[1];
 				size_t numPlanes = lumpinfo->filelen / sizeof(dplane_t);
 
-				if (numPlanes < MAX_MAP_PLANES) {
+				if (numPlanes > MAX_MAP_PLANES) {
 					std::cerr << "BSP has more than the allowed amount of planes\n";
 					return false;
 				}
@@ -145,14 +145,60 @@ namespace ValveBSP {
 
 				verboseprint(numVerts << " vertexes\n");
 
-				bsp.lumps[3] = (void*)& bsp.lump3_vertexes;
+				bsp.lumps[3] = (void*)&bsp.lump3_vertexes;
+			}
+
+			// LUMP 12: EDGES
+			{
+				verboseprint("Parsing lump 12 (vertexes).. ");
+
+				lump_t* lumpinfo = &bsp.header.lumps[12];
+				size_t numEdges = lumpinfo->filelen / sizeof(dedge_t);
+
+				if (numEdges > MAX_MAP_EDGES) {
+					std::cerr << "BSP has more than the allowed amount of edges\n";
+					return false;
+				}
+
+				for (int i = 0; i < numEdges; i++) {
+					dedge_t edge;
+					memcpy((void*)&edge, this->buffer + lumpinfo->fileofs + i * sizeof(dedge_t), sizeof(dedge_t));
+					bsp.lump12_edges.push_back(edge);
+				}
+
+				verboseprint(numEdges << " edges\n");
+
+				bsp.lumps[12] = (void*)&bsp.lump12_edges;
+			}
+
+			// LUMP 13: EDGES
+			{
+				verboseprint("Parsing lump 13 (surfedges).. ");
+
+				lump_t* lumpinfo = &bsp.header.lumps[13];
+				size_t numSurfedges = lumpinfo->filelen / sizeof(dsurfedge_t);
+
+				if (numSurfedges > MAX_MAP_SURFEDGES) {
+					std::cerr << "BSP has more than the allowed amount of surfedges\n";
+					return false;
+				}
+
+				for (int i = 0; i < numSurfedges; i++) {
+					dsurfedge_t surfedge;
+					memcpy((void*)&surfedge, this->buffer + lumpinfo->fileofs + i * sizeof(dsurfedge_t), sizeof(dsurfedge_t));
+					bsp.lump13_surfedges.push_back(surfedge);
+				}
+
+				verboseprint(numSurfedges << " surfedges\n");
+
+				bsp.lumps[13] = (void*)&bsp.lump13_surfedges;
 			}
 
 			return true;
 			#undef c
 		}
-	};
 
-	#undef verboseprint
+		#undef verboseprint
+	};
 
 }

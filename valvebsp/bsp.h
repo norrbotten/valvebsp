@@ -11,8 +11,10 @@ namespace ValveBSP {
 	// The VBSP magic number, ie. the first 4 bytes of the file
 	constexpr unsigned int VBSP_MAGIC_NUMBER = ('P' << 24) + ('S' << 16) + ('B' << 8) + 'V';
 
-	constexpr unsigned int MAX_MAP_PLANES = 65536; // Maximum amount of planes
-	constexpr unsigned int MAX_MAP_VERTS = 65536; // Maximum amount of vertexes
+	constexpr unsigned int MAX_MAP_PLANES = 65536;	// Maximum amount of planes
+	constexpr unsigned int MAX_MAP_VERTS = 65536;	// Maximum amount of vertexes
+	constexpr unsigned int MAX_MAP_EDGES = 256000;	// Maximum amount of edges
+	constexpr unsigned int MAX_MAP_SURFEDGES = 512000;	// Maximum amount of surfedges
 
 	// 3D vector
 	struct Vector {
@@ -76,6 +78,14 @@ namespace ValveBSP {
 	// vertex, just a vector
 	typedef Vector dvertex_t;
 
+	// dedge_t, two shorts which reference the vertex lump
+	struct dedge_t {
+		unsigned short v[2];
+	};
+
+	// dsurfedge_t, just an integer
+	typedef int dsurfedge_t;
+
 	/*
 		ALL LUMPS ARE DEFINED BELOW
 	*/
@@ -92,6 +102,14 @@ namespace ValveBSP {
 	// array of dvertex_t
 	typedef std::vector<dvertex_t> lump_vertexes;
 
+	// LUMP 12, edges
+	// array of dedge_t
+	typedef std::vector<dedge_t> lump_edges;
+
+	// LUMP 13, surfedges
+	// array of dsurfedge_t
+	typedef std::vector<dsurfedge_t> lump_surfedges;
+
 	struct BSP {
 		dheader_t header;
 
@@ -101,6 +119,8 @@ namespace ValveBSP {
 		lump_entities	lump0_entities;
 		lump_planes		lump1_planes;
 		lump_vertexes	lump3_vertexes;
+		lump_edges		lump12_edges;
+		lump_surfedges	lump13_surfedges;
 	};
 
 }
